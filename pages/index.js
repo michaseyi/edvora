@@ -3,8 +3,10 @@ import Image from "next/image";
 import Header from "../components/Header";
 import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import CardContainer from "../components/CardContainer";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ArrowDropDownSharpIcon from "@mui/icons-material/ArrowDropDownSharp";
+import { formatDate, getNearestStop, formatStationPath } from "../utils";
+import axios from "axios";
 
 export default function Home() {
   const [number, setNumber] = useState(4);
@@ -13,6 +15,19 @@ export default function Home() {
   const [isStateToggled, setIsStateToggled] = useState(false);
   const [isCityToggled, setIsCityToggled] = useState(false);
   const [filters, setfilters] = useState({});
+  const [ridesData, setRidesData] = useState([]);
+  const [userData, setUserData] = useState({});
+  const [filter, setFilter] = useState({ state: null, city: null });
+
+  // Refs for state and city dropdown
+  const scrollStateUp = useRef(null);
+  const scrollCityUp = useRef(null);
+
+  // Gets data from api
+  const getData = () => {
+    axios.get("/api/rides_data").then((res) => setRidesData(res.data));
+    axios.get("/api/user_data").then((res) => setUserData(res.data));
+  };
 
   const handleClick = (number, current) => {
     setNumber(number);
@@ -23,15 +38,23 @@ export default function Home() {
     setIsFilterToggled(!isFilterToggled);
     setIsCityToggled(false);
     setIsStateToggled(false);
+    scrollCityUp.current.scrollTop = 0;
+    scrollStateUp.current.scrollTop = 0;
   };
   const toggledState = () => {
     setIsStateToggled(!isStateToggled);
+    scrollStateUp.current.scrollTop = 0;
     setIsCityToggled(false);
   };
   const toggledCity = () => {
     setIsCityToggled(!isCityToggled);
+    scrollCityUp.current.scrollTop = 0;
     setIsStateToggled(false);
   };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
     <div>
@@ -45,18 +68,19 @@ export default function Home() {
       <Header name="Dhruv Singh" profilePic="/images/profile.jpg" />
 
       {/* Main starts here */}
-      <main className="px-4 md:px-0">
+      <main className="px-4 md:px-0" unselectable="on">
         <div className="container mx-auto ">
           <div className="flex items-center bg-[#292929] justify-between py-3 sm:py-6 sticky top-[4.8rem] z-30 ">
+            {/* Tabs start here */}
             <ul className="text-sm text-center sm:text-[18px] text-[#7c7a7c] font-[inter] flex items-center gap-x-2 sm:gap-x-6 select-none">
               <li
-                onClick={() => handleClick(2, "nearest")}
+                onClick={() => handleClick(7, "nearest")}
                 className={active === "nearest" ? "text-white font-[600] border-b-2 cursor-pointer " : "cursor-pointer"}
               >
                 Nearest rides
               </li>
               <li
-                onClick={() => handleClick(1, "upcoming")}
+                onClick={() => handleClick(5, "upcoming")}
                 className={active === "upcoming" ? "text-white font-[600] border-b-2 cursor-pointer" : "cursor-pointer"}
               >
                 Upcoming rides (4)
@@ -70,14 +94,15 @@ export default function Home() {
             </ul>
             <div className="select-none relative">
               {/* Toogle filter modal */}
+
               <button className="sm:space-x-2 flex items-center" onClick={toggleFilterBox}>
                 <FilterListOutlinedIcon className="cursor-pointer" />
                 <span className="hidden sm:inline-flex cursor-pointer">Filters</span>
               </button>
 
               {/* Filter modal */}
-              <div className={`${isFilterToggled ? "block" : "hidden"}`}>
-                <div className="absolute right-0 -bottom-[10.3rem] bg-[#101010] w-[11rem] h-[10rem] shadow-xl rounded-xl z-20 p-4 flex flex-col justify-between ">
+              <div className={`${!isFilterToggled && "opacity-0"} transition-opacity`}>
+                <div className="absolute right-0 -bottom-[10.3rem] bg-[#101010] w-[13rem] h-[10rem] shadow-xl rounded-xl z-20 p-4 flex flex-col justify-between  ">
                   <h3 className="text-[#979797]">Filters</h3>
                   <hr className="bg-[#979797] border-none h-[1px] my-1.5" />
                   <button
@@ -89,12 +114,18 @@ export default function Home() {
                     <div
                       className={`${
                         !isStateToggled && "hidden"
-                      } absolute w-full left-0 top-[calc(100%+7px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
+                      } absolute w-full left-0 top-[calc(100%+10px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
                     >
-                      <ul className="text-left px-2">
-                        <li>state a</li>
-                        <li>state b</li>
-                        <li>state c</li>
+                      <ul ref={scrollStateUp} className="text-left px-2 overflow-y-auto max-h-56">
+                        {[...new Set(ridesData.map((ride) => ride.state))].sort().map((state) => (
+                          <li
+                            key={state}
+                            className="truncate py-1 hover:text-gray-400 text-sm"
+                            onClick={() => setFilter({ state })}
+                          >
+                            {state}
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </button>
@@ -108,12 +139,34 @@ export default function Home() {
                     <div
                       className={`${
                         !isCityToggled && "hidden"
-                      } absolute w-full left-0 top-[calc(100%+7px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
+                      } absolute w-full left-0 top-[calc(100%+10px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
                     >
-                      <ul className="text-left px-2">
-                        <li>city a</li>
-                        <li>city b</li>
-                        <li>city c</li>
+                      <ul ref={scrollCityUp} className="text-left px-2 overflow-y-auto max-h-56">
+                        {!filter.state
+                          ? [...new Set(ridesData.map((ride) => ride.city))].sort().map((city) => (
+                              <li
+                                key={city}
+                                className="truncate py-1 hover:text-gray-400 text-sm"
+                                onClick={() => setFilter({ ...filter, city })}
+                              >
+                                {city}
+                              </li>
+                            ))
+                          : [
+                              ...new Set(
+                                ridesData.filter((ride) => ride.state === filter.state).map((ride) => ride.city)
+                              ),
+                            ]
+                              .sort()
+                              .map((city) => (
+                                <li
+                                  key={city}
+                                  className="truncate py-1 hover:text-gray-400 text-sm"
+                                  onClick={() => setFilter({ ...filter, city })}
+                                >
+                                  {city}
+                                </li>
+                              ))}
                       </ul>
                     </div>
                   </button>

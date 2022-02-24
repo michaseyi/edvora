@@ -6,7 +6,7 @@ const CardContainer = ({ number }) => {
   const createCard = (num) => {
     let cards = [];
     for (let i = num; i > 0; i--) {
-      cards.push(<Card />);
+      cards.push(<Card  key={i}/>);
     }
     return cards;
   };

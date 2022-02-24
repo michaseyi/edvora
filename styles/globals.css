@@ -4,6 +4,10 @@
 
 @layer base{
   body{
-    @apply bg-[#292929] text-white
+    @apply bg-[#292929] text-white selection:bg-transparent select-none 
   }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
 }
