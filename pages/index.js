@@ -34,7 +34,9 @@ export default function Home() {
       .get("/api/user_data")
       .then((res) => {
         setUserData(res.data);
-        setIsFetching(false);
+
+        // setimeout to make the transition clean
+        setTimeout(() => setIsFetching(false), 100);
       })
       .catch((err) => {});
   };
@@ -80,6 +82,7 @@ export default function Home() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [filter]);
+
   return (
     <div>
       <Head>
@@ -119,7 +122,8 @@ export default function Home() {
                     : "cursor-pointer transition-all ease-linear"
                 }
               >
-                Upcoming rides {`(${sortRides("upcoming", ridesData, userData.station_code).length})`}
+                Upcoming rides{" "}
+                {`${!isFetching ? `(${sortRides("upcoming", ridesData, userData.station_code).length})` : ""}`}
               </li>
               <li
                 onClick={() => handleClick("past")}
@@ -129,7 +133,7 @@ export default function Home() {
                     : "cursor-pointer transition-all ease-linear"
                 }
               >
-                Past rides {`(${sortRides("past", ridesData, userData.station_code).length})`}
+                Past rides {`${!isFetching ? `(${sortRides("past", ridesData, userData.station_code).length})` : ""}`}
               </li>
             </ul>
             <div className="select-none relative">

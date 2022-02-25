@@ -6,7 +6,7 @@ const Header = ({ name, profilePic, isFetching }) => {
     /* sticky top-0 z-40 */
     <header className="bg-[#101010] py-4 sm:py-5 px-4">
       <div className="container mx-auto flex items-center justify-between">
-        <div className="font-[inter] font-bold text-white text-3xl sm:text-4xl">
+        <div className="font-[inter] font-bold text-white text-4xl">
           <Link href="/">Edvora</Link>
         </div>
         <div className="flex items-center justify-center gap-x-7">

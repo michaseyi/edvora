@@ -8,19 +8,26 @@ const CardContainer = ({ currentTab, isFetching, stationCode, filter }) => {
   useEffect(() => {});
   return (
     <div className="mb-4 mt-0 flex flex-col gap-y-4 min-w-full">
-      {applyFilter(currentTab, filter.state, filter.city).map((ride, index) => (
-        <Card
-          key={index}
-          rideId={ride.id}
-          origin={ride.origin_station_code}
-          stationPath={formatStationPath(ride.station_path)}
-          date={formatDate(ride.date)}
-          distance={getDistanceToNearestStop(ride.station_path, stationCode)}
-          map_url={ride.map_url}
-          state={ride.state}
-          city={ride.city}
-        />
-      ))}
+      {isFetching ? (
+        <>
+          <Card skeleton />
+          <Card skeleton />
+        </>
+      ) : (
+        applyFilter(currentTab, filter.state, filter.city).map((ride, index) => (
+          <Card
+            key={index}
+            rideId={ride.id}
+            origin={ride.origin_station_code}
+            stationPath={formatStationPath(ride.station_path)}
+            date={formatDate(ride.date)}
+            distance={getDistanceToNearestStop(ride.station_path, stationCode)}
+            map_url={ride.map_url}
+            state={ride.state}
+            city={ride.city}
+          />
+        ))
+      )}
     </div>
   );
 };
