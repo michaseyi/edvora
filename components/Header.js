@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
+import { motion } from "framer-motion";
 const Header = ({ name, profilePic, isFetching }) => {
   return (
     /* sticky top-0 z-40 */
@@ -14,9 +14,23 @@ const Header = ({ name, profilePic, isFetching }) => {
             {isFetching ? <div className="w-44 h-6 rounded-sm bg-[#292929] animate-pulse"></div> : name}
           </div>
           {isFetching ? (
-            <div className="w-[49px] h-[49px] rounded-full bg-[#292929] animate-pulse"></div>
+            <div className="w-[52px] h-[52px] rounded-full bg-[#292929] animate-pulse"></div>
           ) : (
-            <Image className="rounded-full object-cover" src={profilePic} width={49} height={49} />
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {
+                  opacity: 0.7,
+                },
+                visible: {
+                  opacity: 1,
+                  transition: { delay: 0.1},
+                },
+              }}
+            >
+              <Image className="rounded-full object-cover" src={profilePic} width={49} height={49} />
+            </motion.div>
           )}
         </div>
       </div>
