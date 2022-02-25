@@ -31,11 +31,11 @@ const Card = ({ rideId, origin, stationPath, date, distance, map_url, state, cit
             transition: { delay: 0.1},
           },
         }}
-        className="flex items-center justify-center"
+        className="sm:flex-none h-[155px] sm:h-[unset]  w-full sm:w-[200px] md:w-[300px] flex items-center relative"
       >
-        <Image className="rounded-lg object-cover" src={map_url} width={330} height={150} />
+        <Image className="rounded-lg object-cover w-full relative" src={map_url} layout="fill" priority/>
       </motion.div>
-      <ul className="flex-1 flex flex-col justify-between pt-3 sm:py-0 sm:text-[18px]">
+      <ul className="grow flex flex-col justify-between pt-3 sm:py-0 sm:text-[18px]">
         <li>
           <span className="text-[#c0bdc0]">Ride Id : </span>
           {rideId}
@@ -56,7 +56,7 @@ const Card = ({ rideId, origin, stationPath, date, distance, map_url, state, cit
           <span className="text-[#c0bdc0]">Distance : </span>
           {distance}
         </li>
-        <li className="lg:absolute lg:mt-0 mt-1 text-sm font-[400] right-4 top-4 flex items-center gap-x-5">
+        <li className="lg:absolute lg:mt-0 mt-1 text-sm font-[400] right-4 top-4 flex flex-wrap items-center sm:gap-x-5 gap-2">
           <span className="bg-black rounded-full  px-2">{city}</span>
           <span className="bg-black rounded-full  px-2">{state}</span>
         </li>

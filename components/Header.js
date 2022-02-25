@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+
 const Header = ({ name, profilePic, isFetching }) => {
   return (
     /* sticky top-0 z-40 */
@@ -25,11 +26,11 @@ const Header = ({ name, profilePic, isFetching }) => {
                 },
                 visible: {
                   opacity: 1,
-                  transition: { delay: 0.1},
+                  transition: { delay: 0.1 },
                 },
               }}
             >
-              <Image className="rounded-full object-cover" src={profilePic} width={49} height={49} />
+              <Image alt="profile-pic" className="rounded-full object-cover" src={profilePic} width={49} height={49} />
             </motion.div>
           )}
         </div>

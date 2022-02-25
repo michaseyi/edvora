@@ -1,12 +1,12 @@
 import Head from "next/head";
-import Image from "next/image";
 import Header from "../components/Header";
-import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import CardContainer from "../components/CardContainer";
 import { useEffect, useRef, useState } from "react";
 import ArrowDropDownSharpIcon from "@mui/icons-material/ArrowDropDownSharp";
-import { formatDate, getDistanceToNearestStop, formatStationPath, sortRides } from "../utils";
+import { removeDuplicateRides, sortRides } from "../utils";
 import axios from "axios";
+import FilterButton from "../components/FilterButton";
+import ClearIcon from "@mui/icons-material/Clear";
 
 export default function Home() {
   const [currentTab, setCurrentTab] = useState([]);
@@ -25,25 +25,30 @@ export default function Home() {
 
   // Gets data from api
   const getData = () => {
-    setIsFetching(true);
     axios
       .get("/api/rides_data")
       .then((res) => setRidesData(res.data))
-      .catch((err) => {});
+      .catch((err) => {
+        alert("Error fetching data, please click the button to refresh");
+        location.reload();
+      });
     axios
       .get("/api/user_data")
       .then((res) => {
         setUserData(res.data);
-
-        // setimeout to make the transition clean
-        setTimeout(() => setIsFetching(false), 100);
+        setIsFetching(false);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        alert("Error fetching data, please click the button to refresh");
+        location.reload();
+      });
   };
 
   const handleClick = (current) => {
     setActive(current);
-    setCurrentTab(sortRides(current, ridesData, userData.station_code));
+    setCurrentTab(
+      sortRides(current, current === "nearest" ? removeDuplicateRides(ridesData) : ridesData, userData.station_code)
+    );
 
     // scrolls to top on tab change
     window.scrollTo(0, 0);
@@ -140,7 +145,7 @@ export default function Home() {
               {/* Toogle filter modal */}
 
               <button className="sm:space-x-2 flex items-center relative z-50" onClick={toggleFilterBox}>
-                <FilterListOutlinedIcon className="cursor-pointer" />
+                <FilterButton />
                 <span className="hidden sm:inline-flex cursor-pointer">Filters</span>
               </button>
               {/* Overlay for filter modal*/}
@@ -167,6 +172,12 @@ export default function Home() {
                       } absolute w-full left-0 top-[calc(100%+10px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
                     >
                       <ul ref={scrollStateUp} className="text-left px-2 overflow-y-auto max-h-56">
+                        <li
+                          onClick={() => setFilter({ ...filter, state: null })}
+                          className="text-right py-0.5 text-black"
+                        >
+                          <ClearIcon />
+                        </li>
                         {[...new Set(ridesData.map((ride) => ride.state))].sort().map((state) => (
                           <li
                             key={state}
@@ -192,6 +203,12 @@ export default function Home() {
                       } absolute w-full left-0 top-[calc(100%+10px)] bg-[#292929] z-40 rounded-lg shadow-xl`}
                     >
                       <ul ref={scrollCityUp} className="text-left px-2 overflow-y-auto max-h-56">
+                        <li
+                          onClick={() => setFilter({ ...filter, city: null })}
+                          className="text-right py-0.5 text-black"
+                        >
+                          <ClearIcon />
+                        </li>
                         {!filter.state
                           ? [...new Set(ridesData.map((ride) => ride.city))].sort().map((city) => (
                               <li
