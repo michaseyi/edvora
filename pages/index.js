@@ -146,7 +146,7 @@ export default function Home() {
 
               <button className="sm:space-x-2 flex items-center relative z-50" onClick={toggleFilterBox}>
                 <FilterButton />
-                <span className="hidden sm:inline-flex cursor-pointer">Filters</span>
+                <span className="hidden sm:inline-flex cursor-pointer">Filter</span>
               </button>
               {/* Overlay for filter modal*/}
 
