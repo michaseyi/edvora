@@ -5,19 +5,19 @@ import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import CardContainer from "../components/CardContainer";
 import { useEffect, useRef, useState } from "react";
 import ArrowDropDownSharpIcon from "@mui/icons-material/ArrowDropDownSharp";
-import { formatDate, getNearestStop, formatStationPath } from "../utils";
+import { formatDate, getDistanceToNearestStop, formatStationPath, sortRides } from "../utils";
 import axios from "axios";
 
 export default function Home() {
-  const [number, setNumber] = useState(4);
+  const [currentTab, setCurrentTab] = useState([]);
   const [active, setActive] = useState("nearest");
   const [isFilterToggled, setIsFilterToggled] = useState(false);
   const [isStateToggled, setIsStateToggled] = useState(false);
   const [isCityToggled, setIsCityToggled] = useState(false);
-  const [filters, setfilters] = useState({});
   const [ridesData, setRidesData] = useState([]);
   const [userData, setUserData] = useState({});
   const [filter, setFilter] = useState({ state: null, city: null });
+  const [isFetching, setIsFetching] = useState(true);
 
   // Refs for state and city dropdown
   const scrollStateUp = useRef(null);
@@ -25,13 +25,29 @@ export default function Home() {
 
   // Gets data from api
   const getData = () => {
-    axios.get("/api/rides_data").then((res) => setRidesData(res.data));
-    axios.get("/api/user_data").then((res) => setUserData(res.data));
+    setIsFetching(true);
+    axios
+      .get("/api/rides_data")
+      .then((res) => setRidesData(res.data))
+      .catch((err) => {});
+    axios
+      .get("/api/user_data")
+      .then((res) => {
+        setUserData(res.data);
+        setIsFetching(false);
+      })
+      .catch((err) => {});
   };
 
-  const handleClick = (number, current) => {
-    setNumber(number);
+  const handleClick = (current) => {
     setActive(current);
+    setCurrentTab(sortRides(current, ridesData, userData.station_code));
+
+    // scrolls to top on tab change
+    window.scrollTo(0, 0);
+
+    //resets filter on tab change
+    setFilter({});
   };
 
   const toggleFilterBox = () => {
@@ -56,6 +72,14 @@ export default function Home() {
     getData();
   }, []);
 
+  useEffect(() => {
+    ridesData && userData && setCurrentTab(sortRides(active, ridesData, userData.station_code));
+  }, [ridesData, userData]);
+
+  // scrolls to top on filter change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [filter]);
   return (
     <div>
       <Head>
@@ -64,44 +88,66 @@ export default function Home() {
         <meta name="theme-color" content="#101010" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
       {/* Header starts here */}
-      <Header name="Dhruv Singh" profilePic="/images/profile.jpg" />
+      <Header name={userData.name} profilePic={userData.url} isFetching={isFetching} />
 
       {/* Main starts here */}
-      <main className="px-4 md:px-0" unselectable="on">
+      {/* sm:top-[5.55rem] top-[5.05rem]  */}
+      <main className="px-4" unselectable="on">
         <div className="container mx-auto ">
-          <div className="flex items-center bg-[#292929] justify-between py-3 sm:py-6 sticky top-[4.8rem] z-30 ">
+          <div className="flex items-center bg-[#292929] justify-between py-3 sm:py-6 top-0 sticky z-30 ">
             {/* Tabs start here */}
+
+            {/* Tab header */}
             <ul className="text-sm text-center sm:text-[18px] text-[#7c7a7c] font-[inter] flex items-center gap-x-2 sm:gap-x-6 select-none">
               <li
-                onClick={() => handleClick(7, "nearest")}
-                className={active === "nearest" ? "text-white font-[600] border-b-2 cursor-pointer " : "cursor-pointer"}
+                onClick={() => handleClick("nearest")}
+                className={
+                  active === "nearest"
+                    ? "text-white font-[600] border-b-2 cursor-pointer transition-all ease-linear"
+                    : "transition-all ease-linear cursor-pointer"
+                }
               >
                 Nearest rides
               </li>
               <li
-                onClick={() => handleClick(5, "upcoming")}
-                className={active === "upcoming" ? "text-white font-[600] border-b-2 cursor-pointer" : "cursor-pointer"}
+                onClick={() => handleClick("upcoming")}
+                className={
+                  active === "upcoming"
+                    ? "text-white font-[600] border-b-2 cursor-pointer transition-all ease-linear "
+                    : "cursor-pointer transition-all ease-linear"
+                }
               >
-                Upcoming rides (4)
+                Upcoming rides {`(${sortRides("upcoming", ridesData, userData.station_code).length})`}
               </li>
               <li
-                onClick={() => handleClick(3, "past")}
-                className={active === "past" ? "text-white font-[600] border-b-2 cursor-pointer" : "cursor-pointer"}
+                onClick={() => handleClick("past")}
+                className={
+                  active === "past"
+                    ? "text-white font-[600] border-b-2 cursor-pointer transition-all ease-linear"
+                    : "cursor-pointer transition-all ease-linear"
+                }
               >
-                Past rides (2)
+                Past rides {`(${sortRides("past", ridesData, userData.station_code).length})`}
               </li>
             </ul>
             <div className="select-none relative">
               {/* Toogle filter modal */}
 
-              <button className="sm:space-x-2 flex items-center" onClick={toggleFilterBox}>
+              <button className="sm:space-x-2 flex items-center relative z-50" onClick={toggleFilterBox}>
                 <FilterListOutlinedIcon className="cursor-pointer" />
                 <span className="hidden sm:inline-flex cursor-pointer">Filters</span>
               </button>
+              {/* Overlay for filter modal*/}
 
+              <div
+                onClick={toggleFilterBox}
+                className={`${isFilterToggled && "fixed top-0 left-0 w-full h-full  z-40"}`}
+              ></div>
               {/* Filter modal */}
-              <div className={`${!isFilterToggled && "opacity-0"} transition-opacity`}>
+
+              <div className={`${!isFilterToggled && "opacity-0"} transition-opacity relative z-50`}>
                 <div className="absolute right-0 -bottom-[10.3rem] bg-[#101010] w-[13rem] h-[10rem] shadow-xl rounded-xl z-20 p-4 flex flex-col justify-between  ">
                   <h3 className="text-[#979797]">Filters</h3>
                   <hr className="bg-[#979797] border-none h-[1px] my-1.5" />
@@ -175,7 +221,12 @@ export default function Home() {
             </div>
           </div>
 
-          <CardContainer number={number} />
+          <CardContainer
+            currentTab={currentTab}
+            isFetching={isFetching}
+            stationCode={userData.station_code}
+            filter={filter}
+          />
         </div>
       </main>
     </div>
