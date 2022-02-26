@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect} from "react";
 import { applyFilter, formatDate, formatStationPath, getDistanceToNearestStop } from "../utils";
 import Card from "./Card";
 
 const CardContainer = ({ currentTab, isFetching, stationCode, filter }) => {
-  const [filtered, setFilteres] = useState([]);
+ 
 
   useEffect(() => {});
   return (

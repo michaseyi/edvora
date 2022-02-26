@@ -26,16 +26,18 @@ export default function Home() {
   // Gets data from api
   const getData = () => {
     axios
-      .get("/api/rides_data")
-      .then((res) => setRidesData(res.data))
+      .get("/api/user_data")
+      .then((res) => {
+        setUserData(res.data);
+      })
       .catch((err) => {
         alert("Error fetching data, please click the button to refresh");
         location.reload();
       });
     axios
-      .get("/api/user_data")
+      .get("/api/rides_data")
       .then((res) => {
-        setUserData(res.data);
+        setRidesData(res.data);
         setIsFetching(false);
       })
       .catch((err) => {

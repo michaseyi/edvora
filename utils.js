@@ -78,8 +78,9 @@ export const removeDuplicateRides = (data) => {
       checkedIds.push(current.id);
       duplicateFree.push(current);
     }
-    return duplicateFree;
+    
   });
+  return duplicateFree;
   // return data.filter((ride) => {
   //   let returnValue = false;
   //   if (!checkedIds.includes(ride.id)) {
